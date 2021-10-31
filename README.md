@@ -106,7 +106,11 @@ Because the project is compiled to both `wasm32-unknown-unknown` and the host tr
 
 ## Error Handling
 
-`#[backend]` functions that need to return an error can return a `Result<T, E>` where `T` is a `wasm-bindgen`-compatible type and `E` is a type that implements `std::error::Error`, including `Box<dyn std::error::Error>>` and `anyhow::Error`. Errors crossing the network boundary are converted to a `String` representation on the server via their `to_string()` method and delivered as a Promise rejection on the JS side.
+`#[backend]` functions that need to return an error can return a `Result<T, E>` where `T` is a `wasm-bindgen`-compatible type and `E` is a type that implements `std::error::Error`, including `Box<dyn std::error::Error>>` and `anyhow::Error`. Errors crossing the network boundary are converted to a `String` representation on the server via their `to_string()` trait method and delivered as a Promise rejection on the JS side.
+
+## Streaming Responses
+
+If a backend function returns a futures::stream::Stream<T>, the JavaScript function will return an object with a `.subscribe()` method. This method takes a closure that will be called on each new stream element, and returns a closure that should be called to unsubscribe from the stream. This provides direct compatibility with [Svelte stores](https://svelte.dev/docs#Store_contract) and [RxJS Observables](https://rxjs.dev/guide/observable).
 
 ## Server
 
@@ -126,7 +130,6 @@ async fn get_wasm_greeting() -> String {
 ## To Do / Future Directions
 
 - Better WebSocket status management / reconnect
-- Streaming responses with `futures::stream`
 - Many things [`tarpc`](https://github.com/google/tarpc) does, particularly around timeouts and cancellation.
 
 ### License: MIT OR Apache-2.0 OR CC0-1.0 (public domain)
